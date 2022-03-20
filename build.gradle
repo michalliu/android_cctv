@@ -1,0 +1,94 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.1.0'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "29.0.3"
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            jni.srcDirs = ['jni']
+            assets.srcDirs = ['assets']
+            res.srcDirs = ['res']
+            // this cause error "More than one file was found with OS independent path 'lib/x86/libusb.so'"
+            // https://stackoverflow.com/questions/44954122/more-than-one-file-was-found-with-os-independent-path-lib-x86-libusb-so
+            //jniLibs.srcDirs = ['jniLibs']
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+    }
+    defaultConfig {
+        applicationId "org.teslamic.wificamera"
+        minSdkVersion 21
+        targetSdkVersion 26
+        versionCode 22
+        versionName "1.3.2"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "SENTRY_DSN", "null"
+        buildConfigField "String", "GA_ID", "null"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    lintOptions {
+        lintConfig file("./lint.xml")
+    }
+    defaultConfig {
+        ndk {
+            abiFilters = [ "armeabi-v7a" ]
+        }
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_TOOLCHAIN=clang", "-DANDROID_STL=c++_static",
+                        '-DANDROID_LINKER_FLAGS=-landroid -llog', '-DANDROID_CPP_FEATURES=rtti exceptions', "-DANDROID_ARM_NEON=ON",
+                        "-DCMAKE_VERBOSE_MAKEFILE=ON"
+                cppFlags "-std=c++14", "-fexceptions", "-frtti"
+                targets "MediaEncoder"
+            }
+        }
+
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "jni/CMakeLists.txt"
+            version "3.12.0+"
+        }
+    }
+}
+
+repositories {
+    jcenter()
+    google()
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.apache.httpcomponents:httpclient:4.5.2"
+}

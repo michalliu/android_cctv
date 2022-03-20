@@ -5,7 +5,7 @@
 #include <inttypes.h>
 
 extern "C" {
-#include <x264/x264.h>
+#include "x264/include/x264.h"
 }
 
 class H264Encoder {
